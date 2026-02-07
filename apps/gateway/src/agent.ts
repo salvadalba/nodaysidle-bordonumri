@@ -141,21 +141,23 @@ export class AgentEngine {
 
         // If no tool calls, we have the final response
         if (response.toolCalls.length === 0) {
+          const reply = response.content?.trim() || "Done.";
+
           addMessage(this.db, {
             sessionId,
             role: "assistant",
-            content: response.content,
+            content: reply,
           });
 
           this.emit({
             type: "response",
             sessionId,
             channelType: message.channelType,
-            data: { content: response.content },
+            data: { content: reply },
             timestamp: new Date(),
           });
 
-          await sendReply(response.content);
+          await sendReply(reply);
           return;
         }
 
@@ -207,7 +209,7 @@ export class AgentEngine {
         "I've reached the maximum number of steps for this task. Here's what I've done so far - let me know if you'd like me to continue.",
       );
     } catch (err: any) {
-      const errorMsg = `Sorry, I encountered an error: ${err.message}`;
+      const errorMsg = `Sorry, I encountered an error: ${err.message || "Unknown error"}`;
 
       this.emit({
         type: "error",

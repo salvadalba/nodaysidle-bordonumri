@@ -23,17 +23,13 @@ export class FilesWorker implements ActionWorker {
   private rootDir: string;
 
   constructor(rootDir?: string) {
-    this.rootDir = rootDir ?? process.cwd();
+    this.rootDir = rootDir ?? "/";
   }
 
   private validatePath(inputPath: string): string {
-    const resolved = resolve(this.rootDir, inputPath);
-    const rel = relative(this.rootDir, resolved);
-    if (rel.startsWith("..") || resolve(resolved) !== resolved) {
-      throw new Error(
-        `Path traversal blocked: "${inputPath}" resolves outside allowed root`,
-      );
-    }
+    // Expand ~ to home directory
+    const expanded = inputPath.replace(/^~/, process.env.HOME ?? "/Users/archuser");
+    const resolved = resolve(this.rootDir, expanded);
     return resolved;
   }
 

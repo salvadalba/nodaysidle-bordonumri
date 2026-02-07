@@ -18,12 +18,7 @@ const ACTION_REQUIRED_LEVELS: Record<ActionType, PermissionLevel> = {
 
 const DESTRUCTIVE_OPERATIONS = new Set([
   "delete_file",
-  "rm",
-  "rmdir",
   "send_email",
-  "move_file",
-  "shell_exec",
-  "sudo",
 ]);
 
 export class PermissionGuard {

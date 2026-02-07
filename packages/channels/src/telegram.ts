@@ -71,14 +71,20 @@ export class TelegramAdapter implements ChannelAdapter {
 
   async sendMessage(channelId: string, content: string): Promise<void> {
     try {
+      // Try Markdown first, fall back to plain text if parsing fails
       await this.bot.api.sendMessage(Number(channelId), content, {
         parse_mode: "Markdown",
       });
-    } catch (err) {
-      throw new ChannelError(
-        "telegram",
-        `Failed to send: ${err instanceof Error ? err.message : String(err)}`,
-      );
+    } catch {
+      try {
+        // Send as plain text (no parse_mode)
+        await this.bot.api.sendMessage(Number(channelId), content);
+      } catch (err) {
+        throw new ChannelError(
+          "telegram",
+          `Failed to send: ${err instanceof Error ? err.message : String(err)}`,
+        );
+      }
     }
   }
 

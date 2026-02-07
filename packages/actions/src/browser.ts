@@ -141,18 +141,16 @@ function extractSearchResults(
 ): { title: string; url: string; snippet: string }[] {
   const results: { title: string; url: string; snippet: string }[] = [];
 
-  // DuckDuckGo HTML results are in <a class="result__a"> tags
-  const resultBlocks = html.split(/class="result__body"/gi);
+  // DuckDuckGo HTML wraps each result in a web-result div
+  const resultBlocks = html.split(/class="result results_links/gi);
 
   for (let i = 1; i < resultBlocks.length && results.length < 8; i++) {
     const block = resultBlocks[i];
 
-    // Extract URL from result__a link
-    const urlMatch = block.match(/href="([^"]+)"[^>]*class="result__a"/i)
-      || block.match(/class="result__a"[^>]*href="([^"]+)"/i)
-      || block.match(/href="(https?:\/\/[^"]+)"/i);
+    // Extract URL: class="result__a" href="//duckduckgo.com/l/?uddg=ENCODED_URL&amp;rut=..."
+    const urlMatch = block.match(/class="result__a"\s+href="([^"]+)"/i);
 
-    // Extract title from result__a
+    // Extract title from the result__a link text
     const titleMatch = block.match(/class="result__a"[^>]*>([\s\S]*?)<\/a>/i);
 
     // Extract snippet from result__snippet
@@ -160,10 +158,16 @@ function extractSearchResults(
 
     if (urlMatch) {
       let url = urlMatch[1];
-      // DuckDuckGo wraps URLs in a redirect
+
+      // Decode &amp; back to & first
+      url = url.replace(/&amp;/g, "&");
+
+      // DuckDuckGo wraps URLs in a redirect: //duckduckgo.com/l/?uddg=REAL_URL&rut=...
       const uddgMatch = url.match(/uddg=([^&]+)/);
       if (uddgMatch) {
         url = decodeURIComponent(uddgMatch[1]);
+      } else if (url.startsWith("//")) {
+        url = "https:" + url;
       }
 
       results.push({

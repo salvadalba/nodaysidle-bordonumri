@@ -1,153 +1,190 @@
-export default function Home() {
-  return (
-    <main
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        minHeight: "100vh",
-        padding: "var(--space-xl)",
-        gap: "var(--space-lg)",
-      }}
-    >
-      <div className="page-enter" style={{ textAlign: "center" }}>
-        <h1
-          style={{
-            fontFamily: "var(--font-display)",
-            fontSize: "3rem",
-            fontWeight: 700,
-            marginBottom: "var(--space-sm)",
-            background:
-              "linear-gradient(135deg, var(--color-text-primary) 0%, var(--color-accent-primary) 100%)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-          }}
-        >
-          AgentPilot
-        </h1>
-        <p
-          style={{
-            color: "var(--color-text-secondary)",
-            fontSize: "1.125rem",
-            marginBottom: "var(--space-2xl)",
-          }}
-        >
-          The AI that actually does things.
-        </p>
-      </div>
+"use client";
 
-      <div
-        className="glass page-enter"
+import { Sidebar } from "@/components/sidebar";
+import { StatusPanel } from "@/components/status-panel";
+import { ActivityFeed } from "@/components/activity-feed";
+import { GlassCard } from "@/components/glass-card";
+import { useGateway } from "@/hooks/use-gateway";
+import { motion } from "framer-motion";
+
+export default function DashboardPage() {
+  const { health, config, channels, events, connected, loading, error } = useGateway();
+
+  return (
+    <div style={{ display: "flex", minHeight: "100vh" }}>
+      <Sidebar connected={connected} />
+
+      <main
         style={{
-          padding: "var(--space-xl)",
-          maxWidth: "480px",
-          width: "100%",
-          animationDelay: "0.1s",
-          animationFillMode: "backwards",
+          flex: 1,
+          marginLeft: 240,
+          padding: "var(--space-xl) var(--space-2xl)",
+          maxWidth: 1200,
         }}
       >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "var(--space-sm)",
-            marginBottom: "var(--space-lg)",
-          }}
+        {/* Page header */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          style={{ marginBottom: "var(--space-2xl)" }}
         >
-          <div className="agent-active" style={{
-            width: "10px",
-            height: "10px",
-            borderRadius: "var(--radius-full)",
-            background: "var(--color-accent-primary)",
-          }} />
-          <span
+          <h1
             style={{
-              fontFamily: "var(--font-mono)",
-              fontSize: "var(--space-sm)",
-              color: "var(--color-text-secondary)",
-              textTransform: "uppercase",
-              letterSpacing: "0.1em",
+              fontFamily: "var(--font-display)",
+              fontSize: "1.75rem",
+              fontWeight: 600,
+              marginBottom: "var(--space-xs)",
             }}
           >
-            System Status
-          </span>
-        </div>
+            Dashboard
+          </h1>
+          <p
+            style={{
+              fontFamily: "var(--font-body)",
+              fontSize: "0.875rem",
+              color: "var(--color-text-tertiary)",
+            }}
+          >
+            Real-time view of your AgentPilot system
+          </p>
+        </motion.div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-md)" }}>
-          <StatusRow label="Gateway" status="ready" />
-          <StatusRow label="Telegram" status="disconnected" />
-          <StatusRow label="Discord" status="disconnected" />
-          <StatusRow label="SimpleX" status="disconnected" />
-          <StatusRow label="AI Provider" status="not configured" />
-        </div>
-      </div>
+        {/* Error banner */}
+        {error && (
+          <GlassCard
+            style={{
+              marginBottom: "var(--space-lg)",
+              padding: "var(--space-md) var(--space-lg)",
+              borderColor: "rgba(239, 68, 68, 0.3)",
+              background: "rgba(239, 68, 68, 0.08)",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "var(--space-sm)" }}>
+              <span style={{ color: "#ef4444", fontSize: "0.875rem" }}>✕</span>
+              <span
+                style={{
+                  fontFamily: "var(--font-body)",
+                  fontSize: "0.875rem",
+                  color: "#fca5a5",
+                }}
+              >
+                {error}
+              </span>
+            </div>
+          </GlassCard>
+        )}
 
-      <div
-        className="glass page-enter"
-        style={{
-          padding: "var(--space-xl)",
-          maxWidth: "480px",
-          width: "100%",
-          animationDelay: "0.2s",
-          animationFillMode: "backwards",
-        }}
-      >
-        <p
+        {/* Stats row */}
+        <div
           style={{
-            fontFamily: "var(--font-mono)",
-            fontSize: "0.875rem",
-            color: "var(--color-text-tertiary)",
-            lineHeight: 1.6,
+            display: "grid",
+            gridTemplateColumns: "repeat(4, 1fr)",
+            gap: "var(--space-lg)",
+            marginBottom: "var(--space-xl)",
           }}
         >
-          $ agentpilot onboard
-          <br />
-          <span style={{ color: "var(--color-accent-primary)" }}>
-            &gt; Welcome to AgentPilot v0.1.0
-          </span>
-          <br />
-          <span style={{ color: "var(--color-text-secondary)" }}>
-            &gt; Run the onboarding wizard to get started...
-          </span>
-        </p>
-      </div>
-    </main>
+          <StatCard
+            label="Channels"
+            value={channels.length > 0 ? String(channels.length) : "0"}
+            detail={channels.map((c) => c.type).join(", ") || "none"}
+            color="var(--color-accent-primary)"
+            delay={0}
+          />
+          <StatCard
+            label="AI Provider"
+            value={health?.agentReady ? "Ready" : "Off"}
+            detail={config?.ai.primary ?? "not set"}
+            color="var(--color-accent-amber)"
+            delay={0.05}
+          />
+          <StatCard
+            label="Events"
+            value={String(events.length)}
+            detail="this session"
+            color="var(--color-accent-secondary)"
+            delay={0.1}
+          />
+          <StatCard
+            label="Gateway"
+            value={health?.status === "ok" ? "Online" : "Offline"}
+            detail={health?.version ?? "---"}
+            color="var(--color-accent-peach)"
+            delay={0.15}
+          />
+        </div>
+
+        {/* Main content */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "340px 1fr",
+            gap: "var(--space-lg)",
+            alignItems: "start",
+          }}
+        >
+          <StatusPanel
+            health={health}
+            config={config}
+            channels={channels}
+            loading={loading}
+          />
+          <ActivityFeed events={events} />
+        </div>
+      </main>
+    </div>
   );
 }
 
-function StatusRow({ label, status }: { label: string; status: string }) {
-  const isActive = status === "ready" || status === "connected";
+function StatCard({
+  label,
+  value,
+  detail,
+  color,
+  delay,
+}: {
+  label: string;
+  value: string;
+  detail: string;
+  color: string;
+  delay: number;
+}) {
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-      }}
-    >
-      <span style={{ fontFamily: "var(--font-body)", fontSize: "0.875rem" }}>
+    <GlassCard delay={delay}>
+      <span
+        style={{
+          fontFamily: "var(--font-mono)",
+          fontSize: "0.625rem",
+          color: "var(--color-text-tertiary)",
+          textTransform: "uppercase",
+          letterSpacing: "0.1em",
+          display: "block",
+          marginBottom: "var(--space-sm)",
+        }}
+      >
         {label}
       </span>
       <span
         style={{
-          fontFamily: "var(--font-mono)",
-          fontSize: "0.75rem",
-          color: isActive
-            ? "var(--color-accent-secondary)"
-            : "var(--color-text-tertiary)",
-          background: isActive
-            ? "rgba(26, 77, 46, 0.2)"
-            : "rgba(232, 220, 196, 0.05)",
-          padding: "2px 8px",
-          borderRadius: "var(--radius-full)",
-          border: isActive
-            ? "1px solid rgba(26, 77, 46, 0.3)"
-            : "1px solid rgba(232, 220, 196, 0.1)",
+          fontFamily: "var(--font-display)",
+          fontSize: "1.5rem",
+          fontWeight: 600,
+          color,
+          display: "block",
+          marginBottom: 2,
         }}
       >
-        {status}
+        {value}
       </span>
-    </div>
+      <span
+        style={{
+          fontFamily: "var(--font-mono)",
+          fontSize: "0.6875rem",
+          color: "var(--color-text-tertiary)",
+        }}
+      >
+        {detail}
+      </span>
+    </GlassCard>
   );
 }

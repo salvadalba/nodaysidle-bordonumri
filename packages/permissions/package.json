@@ -14,6 +14,9 @@
     "@agentpilot/db": "workspace:*"
   },
   "devDependencies": {
+    "better-sqlite3": "^11.8.0",
+    "@types/better-sqlite3": "^7.6.0",
+    "drizzle-orm": "^0.38.0",
     "vitest": "^3.0.0"
   }
 }

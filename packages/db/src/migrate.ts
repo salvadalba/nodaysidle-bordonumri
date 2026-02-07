@@ -1,25 +1,14 @@
 import Database from "better-sqlite3";
-import { drizzle } from "drizzle-orm/better-sqlite3";
-import * as schema from "./schema.js";
 
-let db: ReturnType<typeof drizzle> | null = null;
-
-export function getDb(dbPath?: string) {
-  if (db) return db;
-  const path = dbPath ?? ":memory:";
-  const sqlite = new Database(path);
-  sqlite.pragma("journal_mode = WAL");
-  sqlite.pragma("foreign_keys = ON");
-  db = drizzle(sqlite, { schema });
-  return db;
-}
-
-export function createTestDb() {
-  const sqlite = new Database(":memory:");
+/**
+ * Run migrations to create all tables.
+ * Safe to call multiple times -- uses IF NOT EXISTS.
+ */
+export function runMigrations(dbPath: string) {
+  const sqlite = new Database(dbPath);
   sqlite.pragma("journal_mode = WAL");
   sqlite.pragma("foreign_keys = ON");
 
-  // Create tables for test DB
   sqlite.exec(`
     CREATE TABLE IF NOT EXISTS sessions (
       id TEXT PRIMARY KEY,
@@ -30,6 +19,7 @@ export function createTestDb() {
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL
     );
+
     CREATE TABLE IF NOT EXISTS messages (
       id TEXT PRIMARY KEY,
       session_id TEXT NOT NULL REFERENCES sessions(id),
@@ -38,6 +28,7 @@ export function createTestDb() {
       tool_calls TEXT,
       created_at INTEGER NOT NULL
     );
+
     CREATE TABLE IF NOT EXISTS permissions (
       id TEXT PRIMARY KEY,
       channel_type TEXT NOT NULL,
@@ -47,6 +38,7 @@ export function createTestDb() {
       level INTEGER NOT NULL,
       created_at INTEGER NOT NULL
     );
+
     CREATE TABLE IF NOT EXISTS audit_log (
       id TEXT PRIMARY KEY,
       session_id TEXT REFERENCES sessions(id),
@@ -62,6 +54,7 @@ export function createTestDb() {
       confirmed INTEGER NOT NULL,
       created_at INTEGER NOT NULL
     );
+
     CREATE TABLE IF NOT EXISTS workflows (
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,
@@ -70,6 +63,7 @@ export function createTestDb() {
       enabled INTEGER NOT NULL DEFAULT 1,
       created_at INTEGER NOT NULL
     );
+
     CREATE TABLE IF NOT EXISTS settings (
       id TEXT PRIMARY KEY,
       key TEXT NOT NULL UNIQUE,
@@ -77,14 +71,12 @@ export function createTestDb() {
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL
     );
+
+    CREATE INDEX IF NOT EXISTS idx_messages_session ON messages(session_id);
+    CREATE INDEX IF NOT EXISTS idx_permissions_channel ON permissions(channel_type, channel_id);
+    CREATE INDEX IF NOT EXISTS idx_audit_log_created ON audit_log(created_at);
+    CREATE INDEX IF NOT EXISTS idx_sessions_channel ON sessions(channel_type, channel_id, user_id);
   `);
 
-  const testDb = drizzle(sqlite, { schema });
-  return testDb;
+  sqlite.close();
 }
-
-export function resetDb() {
-  db = null;
-}
-
-export type AgentPilotDb = ReturnType<typeof getDb>;

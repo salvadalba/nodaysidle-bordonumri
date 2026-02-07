@@ -12,6 +12,7 @@ const ACTION_REQUIRED_LEVELS: Record<ActionType, PermissionLevel> = {
   browser: PermissionLevel.ReadOnly,
   email: PermissionLevel.Communicate,
   files: PermissionLevel.Modify,
+  notes: PermissionLevel.Modify,
   shell: PermissionLevel.Execute,
 };
 

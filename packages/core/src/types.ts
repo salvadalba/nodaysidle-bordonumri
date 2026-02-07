@@ -86,7 +86,7 @@ export interface PermissionRule {
 
 // --- Actions ---
 
-export type ActionType = "email" | "browser" | "files" | "shell";
+export type ActionType = "email" | "browser" | "files" | "notes" | "shell";
 
 export interface ActionRequest {
   type: ActionType;

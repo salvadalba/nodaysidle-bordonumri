@@ -16,7 +16,7 @@ import {
 } from "@agentpilot/core";
 
 export class NotesWorker implements ActionWorker {
-  type = "files" as const; // Uses files permission level
+  type = "notes" as const;
   requiredLevel = PermissionLevel.Modify;
   private notesDir: string;
 

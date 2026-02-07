@@ -1,0 +1,20 @@
+{
+  "name": "@agentpilot/channels",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test:unit": "vitest run",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@agentpilot/core": "workspace:*",
+    "grammy": "^1.35.0",
+    "discord.js": "^14.17.0"
+  },
+  "devDependencies": {
+    "vitest": "^3.0.0"
+  }
+}

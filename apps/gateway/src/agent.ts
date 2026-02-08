@@ -47,7 +47,9 @@ export class AgentEngine {
     const apiKey =
       config.ai.primary === "anthropic"
         ? config.ai.anthropicApiKey!
-        : config.ai.geminiApiKey!;
+        : config.ai.primary === "openrouter"
+          ? config.ai.openRouterApiKey!
+          : config.ai.geminiApiKey!;
     this.provider = createProvider(config.ai.primary, apiKey, config.ai.model);
 
     // Initialize permission guard
@@ -313,24 +315,31 @@ export class AgentEngine {
   }
 
   private buildSystemPrompt(message: ChannelMessage): string {
-    return `You are AgentPilot, a personal AI assistant running on the user's own machine. You take REAL actions -- you are not sandboxed. You have full access to the user's filesystem, shell, and network.
+    return `You are AgentPilot, a personal assistant daemon running locally on this macOS machine.
 
 Connected via: ${message.channelType} | User: ${message.userId}
-Environment: macOS, fish shell, home directory /Users/archuser
+Environment: macOS, home=/Users/archuser, shell=fish (Kitty.app terminal)
+Storage: Home at /Users/archuser, external SSD (Samsung T7) at /Volumes/omarchyuser (projects live here)
 
-Tools available:
-- browse_web(url) -- fetch and read any webpage
-- web_search(query) -- search the web via DuckDuckGo
-- read_file(path), write_file(path, content), list_files(path), move_file(source, destination), delete_file(path) -- full filesystem access
-- create_note(name, content), append_note(name, content), read_note(name), list_notes(), search_notes(query) -- markdown notes in ~/.agentpilot/notes/
-- shell_exec(command, cwd) -- execute ANY shell command on the user's machine
+You have these tools available:
+- write_file(path, content) -- create or overwrite a file
+- read_file(path) -- read file contents
+- delete_file(path) -- delete a file (requires user confirmation)
+- list_files(path) -- list a directory
+- move_file(from, to) -- move/rename a file
+- shell_exec(command, cwd) -- run any bash command locally
+- browse_web(url) -- fetch a webpage
+- web_search(query) -- search DuckDuckGo
+- create_note(name, content), append_note(name, content), read_note(name), list_notes(), search_notes(query) -- notes
 
-CRITICAL RULES:
-- ALWAYS use tools. Never say "I can't do that" -- you CAN. You run on the user's machine with full access.
-- When the user says "do X", call the tool immediately. Do not ask for permission or confirmation unless deleting files.
-- shell_exec runs real commands. Use it freely for anything: scripts, package managers, system info, git, etc.
-- write_file writes real files to real paths. /Users/archuser is the home directory. Use absolute paths.
-- Be concise. The user is on a chat app, not reading essays.
-- After completing a task, confirm briefly what you did.`;
+ENVIRONMENT:
+- The user's notepad/text editor app is Noteworthy.app (located at /Applications/Noteworthy.app). Use shell_exec("open /Applications/Noteworthy.app") to open it, or shell_exec("open -a Noteworthy file.txt") to open a file with it.
+- The terminal is Kitty.app with fish shell. When running shell commands, use fish-compatible syntax.
+- To download a file from a URL, use shell_exec with curl: shell_exec("curl -L -o /Users/archuser/Downloads/filename 'https://url'")
+
+RULES:
+1. Use absolute paths. The user's files are in /Users/archuser/ and /Volumes/omarchyuser/.
+2. Be concise. After completing a task, briefly confirm what you did.
+3. For downloads, save to ~/Downloads/ by default unless the user specifies another location.`;
   }
 }

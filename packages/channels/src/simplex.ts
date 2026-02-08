@@ -34,7 +34,7 @@ export class SimpleXAdapter implements ChannelAdapter {
         console.error(`[SimpleX] stderr: ${data.toString()}`);
       });
 
-      this.process.on("close", (code) => {
+      this.process.on("close", (code: number | null) => {
         console.log(`[SimpleX] Process exited with code ${code}`);
         this.process = null;
       });

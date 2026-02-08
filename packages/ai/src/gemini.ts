@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI, type FunctionDeclarationSchema } from "@google/generative-ai";
 import type {
   AIProviderAdapter,
   AIMessage,
@@ -31,7 +31,7 @@ export class GeminiAdapter implements AIProviderAdapter {
                 functionDeclarations: tools.map((t) => ({
                   name: t.name,
                   description: t.description,
-                  parameters: t.parameters as object,
+                  parameters: t.parameters as unknown as FunctionDeclarationSchema,
                 })),
               },
             ]

@@ -30,6 +30,10 @@ export class FilesWorker implements ActionWorker {
     // Expand ~ to home directory
     const expanded = inputPath.replace(/^~/, process.env.HOME ?? "/Users/archuser");
     const resolved = resolve(this.rootDir, expanded);
+    // Prevent path traversal when rootDir is restricted (not "/")
+    if (this.rootDir !== "/" && !resolved.startsWith(this.rootDir)) {
+      throw new Error(`Path traversal blocked: ${inputPath}`);
+    }
     return resolved;
   }
 
@@ -91,14 +95,10 @@ export class FilesWorker implements ActionWorker {
         case "delete_file": {
           const path = this.validatePath(request.params.path as string);
           if (!existsSync(path)) {
-            return { success: false, error: `File not found: ${path}` };
+            return { success: false, error: `Not found: ${path}` };
           }
-          return {
-            success: true,
-            confirmationRequired: true,
-            confirmationMessage: `Delete "${path}"? This cannot be undone.`,
-            data: { path },
-          };
+          unlinkSync(path);
+          return { success: true, data: { path, removed: true } };
         }
 
         default:
@@ -124,7 +124,7 @@ export class FilesWorker implements ActionWorker {
       },
       {
         name: "write_file",
-        description: "Write content to a file (creates directories as needed)",
+        description: "Write content to a file (creates or overwrites)",
         parameters: {
           type: "object",
           properties: {
@@ -161,7 +161,7 @@ export class FilesWorker implements ActionWorker {
       },
       {
         name: "delete_file",
-        description: "Delete a file (requires confirmation)",
+        description: "Delete a file. This requires user confirmation before executing.",
         parameters: {
           type: "object",
           properties: {

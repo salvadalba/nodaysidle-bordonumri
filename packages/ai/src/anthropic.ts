@@ -15,7 +15,7 @@ export class AnthropicAdapter implements AIProviderAdapter {
 
   constructor(apiKey: string, model?: string) {
     this.client = new Anthropic({ apiKey });
-    this.model = model ?? "claude-sonnet-4-5-20250929";
+    this.model = model ?? "claude-haiku-4-5-20251001";
   }
 
   async chat(

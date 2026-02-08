@@ -17,8 +17,8 @@ const ACTION_REQUIRED_LEVELS: Record<ActionType, PermissionLevel> = {
 };
 
 const DESTRUCTIVE_OPERATIONS = new Set([
-  "delete_file",
   "send_email",
+  "delete_file",
 ]);
 
 export class PermissionGuard {

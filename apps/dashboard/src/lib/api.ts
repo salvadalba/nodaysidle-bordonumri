@@ -1,7 +1,35 @@
-const GATEWAY_URL = process.env.NEXT_PUBLIC_GATEWAY_URL || "http://127.0.0.1:3100";
-const WS_URL = process.env.NEXT_PUBLIC_WS_URL || "ws://127.0.0.1:3100/ws";
+const DEFAULT_GATEWAY = "http://localhost:3100";
 
-export { GATEWAY_URL, WS_URL };
+function getGatewayUrl(): string {
+  if (typeof window !== "undefined") {
+    const stored = localStorage.getItem("agentpilot_gateway_url");
+    if (stored) return stored;
+  }
+  return process.env.NEXT_PUBLIC_GATEWAY_URL || DEFAULT_GATEWAY;
+}
+
+function getWsUrl(): string {
+  const base = getGatewayUrl();
+  return base.replace(/^http/, "ws") + "/ws";
+}
+
+export function setGatewayUrl(url: string) {
+  const clean = url.replace(/\/+$/, "");
+  if (typeof window !== "undefined") {
+    localStorage.setItem("agentpilot_gateway_url", clean);
+  }
+}
+
+export function getStoredGatewayUrl(): string {
+  return getGatewayUrl();
+}
+
+// Use getters so the URL is always fresh from localStorage
+export const GATEWAY_URL_GETTER = getGatewayUrl;
+export const WS_URL_GETTER = getWsUrl;
+// Keep backward compat exports for static reads
+export const GATEWAY_URL = DEFAULT_GATEWAY;
+export const WS_URL = DEFAULT_GATEWAY.replace(/^http/, "ws") + "/ws";
 
 export interface GatewayHealth {
   status: string;
@@ -61,7 +89,8 @@ export interface AgentEvent {
 }
 
 async function fetchApi<T>(path: string): Promise<T> {
-  const res = await fetch(`${GATEWAY_URL}${path}`, { cache: "no-store" });
+  const url = getGatewayUrl();
+  const res = await fetch(`${url}${path}`, { cache: "no-store" });
   if (!res.ok) throw new Error(`API error: ${res.status}`);
   return res.json();
 }

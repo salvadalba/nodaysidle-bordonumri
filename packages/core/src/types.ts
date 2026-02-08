@@ -30,7 +30,7 @@ export interface ChannelAdapter {
 
 // --- AI Providers ---
 
-export type AIProvider = "anthropic" | "gemini";
+export type AIProvider = "anthropic" | "gemini" | "openrouter";
 
 export interface ToolDefinition {
   name: string;

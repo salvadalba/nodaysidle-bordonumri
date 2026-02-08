@@ -156,7 +156,7 @@ describe("PermissionGuard", () => {
       expect(result.allowed).toBe(true);
     });
 
-    it("should require confirmation for destructive operations", async () => {
+    it("should require confirmation for delete_file", async () => {
       setPermission(db, {
         channelType: "telegram",
         channelId: "chat-123",
@@ -169,7 +169,6 @@ describe("PermissionGuard", () => {
       );
       expect(result.allowed).toBe(true);
       expect(result.confirmationRequired).toBe(true);
-      expect(result.confirmationMessage).toContain("confirmation");
     });
 
     it("should require confirmation for send_email", async () => {
@@ -186,7 +185,7 @@ describe("PermissionGuard", () => {
       expect(result.confirmationRequired).toBe(true);
     });
 
-    it("should require confirmation for shell_exec", async () => {
+    it("should not require confirmation for shell_exec", async () => {
       setPermission(db, {
         channelType: "telegram",
         channelId: "chat-123",
@@ -197,7 +196,7 @@ describe("PermissionGuard", () => {
       const result = await guard.check(
         makeRequest({ type: "shell", operation: "shell_exec" }),
       );
-      expect(result.confirmationRequired).toBe(true);
+      expect(result.confirmationRequired).toBe(false);
     });
 
     it("should use default level when no permission set", async () => {

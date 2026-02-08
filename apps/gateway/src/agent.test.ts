@@ -21,27 +21,29 @@ vi.mock("@agentpilot/ai", () => {
 
 // Mock the action workers
 vi.mock("@agentpilot/actions", () => {
-  const makeWorker = (type: string, tools: string[]) => ({
-    type,
-    requiredLevel: 0,
-    getTools: () =>
-      tools.map((name) => ({
-        name,
-        description: `${name} tool`,
-        parameters: {},
-      })),
-    execute: vi.fn().mockResolvedValue({
-      success: true,
-      data: { result: `${type} executed` },
-    }),
-  });
+  function makeWorkerClass(type: string, tools: string[]) {
+    return class {
+      type = type;
+      requiredLevel = 0;
+      getTools() {
+        return tools.map((name) => ({
+          name,
+          description: `${name} tool`,
+          parameters: {},
+        }));
+      }
+      async execute() {
+        return { success: true, data: { result: `${type} executed` } };
+      }
+    };
+  }
 
   return {
-    BrowserWorker: vi.fn(() => makeWorker("browser", ["browse_web", "web_search"])),
-    EmailWorker: vi.fn(() => makeWorker("email", ["send_email", "read_emails"])),
-    FilesWorker: vi.fn(() => makeWorker("files", ["read_file", "write_file", "list_files"])),
-    NotesWorker: vi.fn(() => makeWorker("notes", ["create_note", "read_note", "list_notes"])),
-    ShellWorker: vi.fn(() => makeWorker("shell", ["shell_exec"])),
+    BrowserWorker: makeWorkerClass("browser", ["browse_web", "web_search"]),
+    EmailWorker: makeWorkerClass("email", ["send_email", "read_emails"]),
+    FilesWorker: makeWorkerClass("files", ["read_file", "write_file", "list_files", "move_file", "delete_file"]),
+    NotesWorker: makeWorkerClass("notes", ["create_note", "read_note", "list_notes"]),
+    ShellWorker: makeWorkerClass("shell", ["shell_exec"]),
   };
 });
 

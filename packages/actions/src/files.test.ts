@@ -111,15 +111,21 @@ describe("FilesWorker", () => {
   });
 
   describe("delete_file", () => {
-    it("should require confirmation", async () => {
+    it("should delete the file", async () => {
       writeFileSync(join(testDir, "del.txt"), "bye");
       const result = await worker.execute(
         makeRequest("delete_file", { path: "del.txt" }),
       );
       expect(result.success).toBe(true);
-      expect(result.confirmationRequired).toBe(true);
-      // File should NOT be deleted yet (confirmation required)
-      expect(existsSync(join(testDir, "del.txt"))).toBe(true);
+      expect(existsSync(join(testDir, "del.txt"))).toBe(false);
+    });
+
+    it("should fail for nonexistent file", async () => {
+      const result = await worker.execute(
+        makeRequest("delete_file", { path: "nope.txt" }),
+      );
+      expect(result.success).toBe(false);
+      expect(result.error).toContain("Not found");
     });
   });
 
@@ -146,6 +152,8 @@ describe("FilesWorker", () => {
     expect(tools).toHaveLength(5);
     expect(tools.map((t) => t.name)).toContain("read_file");
     expect(tools.map((t) => t.name)).toContain("write_file");
+    expect(tools.map((t) => t.name)).toContain("list_files");
+    expect(tools.map((t) => t.name)).toContain("move_file");
     expect(tools.map((t) => t.name)).toContain("delete_file");
   });
 });

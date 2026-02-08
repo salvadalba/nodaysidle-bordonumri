@@ -60,8 +60,8 @@ export default function DashboardPage() {
               background: "rgba(239, 68, 68, 0.08)",
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: "var(--space-sm)" }}>
-              <span style={{ color: "#ef4444", fontSize: "0.875rem" }}>✕</span>
+            <div style={{ display: "flex", alignItems: "center", gap: "var(--space-sm)", marginBottom: "var(--space-xs)" }}>
+              <span style={{ color: "#ef4444", fontSize: "0.875rem" }}>!</span>
               <span
                 style={{
                   fontFamily: "var(--font-body)",
@@ -69,9 +69,23 @@ export default function DashboardPage() {
                   color: "#fca5a5",
                 }}
               >
-                {error}
+                Cannot connect to gateway
               </span>
             </div>
+            <span
+              style={{
+                fontFamily: "var(--font-body)",
+                fontSize: "0.75rem",
+                color: "var(--color-text-tertiary)",
+                lineHeight: 1.5,
+              }}
+            >
+              Make sure the gateway is running on your machine. Go to{" "}
+              <a href="/settings" style={{ color: "var(--color-accent-primary)", textDecoration: "underline" }}>
+                Settings
+              </a>
+              {" "}to configure the gateway URL.
+            </span>
           </GlassCard>
         )}
 

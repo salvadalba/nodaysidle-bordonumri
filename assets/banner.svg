@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 300" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f0f1a"/>
+      <stop offset="50%" stop-color="#1a1a2e"/>
+      <stop offset="100%" stop-color="#16213e"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#e94560"/>
+      <stop offset="50%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#10b981"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#e94560" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#10b981" stop-opacity="0.3"/>
+    </linearGradient>
+    <linearGradient id="icon-fill" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e94560"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+    <filter id="blur">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="40"/>
+    </filter>
+    <filter id="glow-filter">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="3"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="900" height="300" rx="16" fill="url(#bg)"/>
+
+  <!-- Grid pattern -->
+  <g opacity="0.04" stroke="#ffffff" stroke-width="1">
+    <line x1="0" y1="60" x2="900" y2="60"/>
+    <line x1="0" y1="120" x2="900" y2="120"/>
+    <line x1="0" y1="180" x2="900" y2="180"/>
+    <line x1="0" y1="240" x2="900" y2="240"/>
+    <line x1="150" y1="0" x2="150" y2="300"/>
+    <line x1="300" y1="0" x2="300" y2="300"/>
+    <line x1="450" y1="0" x2="450" y2="300"/>
+    <line x1="600" y1="0" x2="600" y2="300"/>
+    <line x1="750" y1="0" x2="750" y2="300"/>
+  </g>
+
+  <!-- Ambient glow blobs -->
+  <circle cx="200" cy="150" r="120" fill="#e94560" opacity="0.07" filter="url(#blur)"/>
+  <circle cx="700" cy="150" r="120" fill="#10b981" opacity="0.07" filter="url(#blur)"/>
+  <circle cx="450" cy="100" r="80" fill="#f59e0b" opacity="0.05" filter="url(#blur)"/>
+
+  <!-- Autopilot icon -->
+  <g transform="translate(240, 85)">
+    <!-- Outer ring -->
+    <circle cx="65" cy="65" r="52" stroke="url(#accent)" stroke-width="2.5" fill="none" opacity="0.8"/>
+    <!-- Inner compass -->
+    <circle cx="65" cy="65" r="8" fill="url(#icon-fill)"/>
+    <!-- Crosshairs -->
+    <line x1="65" y1="25" x2="65" y2="50" stroke="url(#accent)" stroke-width="2" stroke-linecap="round"/>
+    <line x1="65" y1="80" x2="65" y2="105" stroke="url(#accent)" stroke-width="2" stroke-linecap="round"/>
+    <line x1="25" y1="65" x2="50" y2="65" stroke="url(#accent)" stroke-width="2" stroke-linecap="round"/>
+    <line x1="80" y1="65" x2="105" y2="65" stroke="url(#accent)" stroke-width="2" stroke-linecap="round"/>
+    <!-- Arrow pointer -->
+    <polygon points="65,35 55,55 65,48 75,55" fill="url(#icon-fill)" opacity="0.9"/>
+    <!-- Orbit dots -->
+    <circle cx="65" cy="18" r="3" fill="#e94560" opacity="0.6"/>
+    <circle cx="112" cy="65" r="3" fill="#10b981" opacity="0.6"/>
+    <circle cx="65" cy="112" r="3" fill="#f59e0b" opacity="0.6"/>
+    <circle cx="18" cy="65" r="3" fill="#e94560" opacity="0.6"/>
+  </g>
+
+  <!-- Title -->
+  <text x="420" y="135" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="52" font-weight="800" fill="#ffffff" letter-spacing="-1">AgentPilot</text>
+
+  <!-- Tagline -->
+  <text x="420" y="170" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="18" fill="#94a3b8" letter-spacing="0.5">The AI that actually does things.</text>
+
+  <!-- Feature pills -->
+  <g transform="translate(420, 192)">
+    <!-- Telegram -->
+    <rect x="0" y="0" width="82" height="26" rx="13" fill="#ffffff" fill-opacity="0.06" stroke="#ffffff" stroke-opacity="0.1" stroke-width="1"/>
+    <text x="41" y="17" font-family="system-ui, sans-serif" font-size="11" fill="#94a3b8" text-anchor="middle">Telegram</text>
+    <!-- Discord -->
+    <rect x="92" y="0" width="72" height="26" rx="13" fill="#ffffff" fill-opacity="0.06" stroke="#ffffff" stroke-opacity="0.1" stroke-width="1"/>
+    <text x="128" y="17" font-family="system-ui, sans-serif" font-size="11" fill="#94a3b8" text-anchor="middle">Discord</text>
+    <!-- SimpleX -->
+    <rect x="174" y="0" width="72" height="26" rx="13" fill="#ffffff" fill-opacity="0.06" stroke="#ffffff" stroke-opacity="0.1" stroke-width="1"/>
+    <text x="210" y="17" font-family="system-ui, sans-serif" font-size="11" fill="#94a3b8" text-anchor="middle">SimpleX</text>
+    <!-- Shell -->
+    <rect x="256" y="0" width="58" height="26" rx="13" fill="#ffffff" fill-opacity="0.06" stroke="#ffffff" stroke-opacity="0.1" stroke-width="1"/>
+    <text x="285" y="17" font-family="system-ui, sans-serif" font-size="11" fill="#94a3b8" text-anchor="middle">Shell</text>
+    <!-- Files -->
+    <rect x="324" y="0" width="52" height="26" rx="13" fill="#ffffff" fill-opacity="0.06" stroke="#ffffff" stroke-opacity="0.1" stroke-width="1"/>
+    <text x="350" y="17" font-family="system-ui, sans-serif" font-size="11" fill="#94a3b8" text-anchor="middle">Files</text>
+  </g>
+
+  <!-- Bottom accent line -->
+  <rect x="0" y="293" width="900" height="7" rx="0" fill="url(#accent)" opacity="0.8"/>
+
+  <!-- Version tag -->
+  <g transform="translate(780, 20)">
+    <rect x="0" y="0" width="90" height="24" rx="12" fill="#10b981" fill-opacity="0.15" stroke="#10b981" stroke-opacity="0.3" stroke-width="1"/>
+    <text x="45" y="16" font-family="monospace" font-size="11" fill="#10b981" text-anchor="middle">v1.0.0</text>
+  </g>
+</svg>

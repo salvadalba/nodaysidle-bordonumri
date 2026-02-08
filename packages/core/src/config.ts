@@ -9,6 +9,7 @@ export interface AgentPilotConfig {
     primary: AIProvider;
     anthropicApiKey?: string;
     geminiApiKey?: string;
+    openRouterApiKey?: string;
     model?: string;
   };
   channels: {

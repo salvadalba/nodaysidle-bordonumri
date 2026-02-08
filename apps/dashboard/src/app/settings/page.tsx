@@ -1,12 +1,28 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Sidebar } from "@/components/sidebar";
 import { GlassCard } from "@/components/glass-card";
 import { useGateway } from "@/hooks/use-gateway";
+import { getStoredGatewayUrl, setGatewayUrl } from "@/lib/api";
 import { motion } from "framer-motion";
 
 export default function SettingsPage() {
-  const { config, health, channels, connected, loading } = useGateway();
+  const { config, health, channels, connected, loading, refresh } = useGateway();
+  const [gatewayInput, setGatewayInput] = useState("");
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    setGatewayInput(getStoredGatewayUrl());
+  }, []);
+
+  const handleSaveGateway = () => {
+    setGatewayUrl(gatewayInput);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+    // Reload to reconnect with new URL
+    window.location.reload();
+  };
 
   return (
     <div style={{ display: "flex", minHeight: "100vh" }}>
@@ -54,8 +70,109 @@ export default function SettingsPage() {
             gap: "var(--space-lg)",
           }}
         >
+          {/* Gateway Connection */}
+          <GlassCard delay={0} style={{ padding: "var(--space-lg)" }}>
+            <div style={{ marginBottom: "var(--space-md)" }}>
+              <span
+                style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: "0.6875rem",
+                  color: "var(--color-text-secondary)",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.12em",
+                }}
+              >
+                Gateway Connection
+              </span>
+            </div>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "var(--space-sm)",
+                marginBottom: "var(--space-sm)",
+              }}
+            >
+              <div
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: "50%",
+                  background: connected ? "#4ade80" : "#ef4444",
+                  boxShadow: connected
+                    ? "0 0 8px rgba(74, 222, 128, 0.5)"
+                    : "0 0 8px rgba(239, 68, 68, 0.5)",
+                }}
+              />
+              <span
+                style={{
+                  fontFamily: "var(--font-body)",
+                  fontSize: "0.8125rem",
+                  color: connected
+                    ? "var(--color-text-primary)"
+                    : "var(--color-accent-amber)",
+                }}
+              >
+                {connected ? "Connected to gateway" : "Not connected -- make sure gateway is running"}
+              </span>
+            </div>
+            <div style={{ display: "flex", gap: "var(--space-sm)" }}>
+              <input
+                type="text"
+                value={gatewayInput}
+                onChange={(e) => setGatewayInput(e.target.value)}
+                placeholder="http://localhost:3100"
+                style={{
+                  flex: 1,
+                  padding: "var(--space-sm) var(--space-md)",
+                  background: "rgba(0, 0, 0, 0.3)",
+                  border: "1px solid rgba(232, 220, 196, 0.1)",
+                  borderRadius: 8,
+                  color: "var(--color-text-primary)",
+                  fontFamily: "var(--font-mono)",
+                  fontSize: "0.8125rem",
+                  outline: "none",
+                }}
+              />
+              <button
+                onClick={handleSaveGateway}
+                style={{
+                  padding: "var(--space-sm) var(--space-lg)",
+                  background: saved
+                    ? "rgba(74, 222, 128, 0.15)"
+                    : "rgba(232, 220, 196, 0.08)",
+                  border: saved
+                    ? "1px solid rgba(74, 222, 128, 0.3)"
+                    : "1px solid rgba(232, 220, 196, 0.12)",
+                  borderRadius: 8,
+                  color: saved ? "#4ade80" : "var(--color-text-primary)",
+                  fontFamily: "var(--font-body)",
+                  fontSize: "0.8125rem",
+                  cursor: "pointer",
+                  transition: "all 0.2s",
+                }}
+              >
+                {saved ? "Saved" : "Save & Reconnect"}
+              </button>
+            </div>
+            {!connected && (
+              <p
+                style={{
+                  fontFamily: "var(--font-body)",
+                  fontSize: "0.75rem",
+                  color: "var(--color-text-tertiary)",
+                  marginTop: "var(--space-sm)",
+                  lineHeight: 1.5,
+                }}
+              >
+                Enter your gateway URL (e.g. http://localhost:3100) and click Save.
+                The gateway must be running on your machine.
+              </p>
+            )}
+          </GlassCard>
+
           {/* AI Provider */}
-          <SettingsSection title="AI Provider" delay={0}>
+          <SettingsSection title="AI Provider" delay={0.05}>
             <SettingsRow
               label="Primary Provider"
               value={config?.ai.primary ?? "not configured"}
@@ -78,7 +195,7 @@ export default function SettingsPage() {
           </SettingsSection>
 
           {/* Channels */}
-          <SettingsSection title="Chat Channels" delay={0.05}>
+          <SettingsSection title="Chat Channels" delay={0.1}>
             <SettingsRow
               label="Telegram"
               value={config?.channels.telegram ? "configured" : "not set"}
@@ -97,7 +214,7 @@ export default function SettingsPage() {
           </SettingsSection>
 
           {/* Server */}
-          <SettingsSection title="Server" delay={0.1}>
+          <SettingsSection title="Server" delay={0.15}>
             <SettingsRow
               label="Gateway Port"
               value={String(config?.server.port ?? 3100)}
@@ -117,7 +234,7 @@ export default function SettingsPage() {
           </SettingsSection>
 
           {/* Config file hint */}
-          <GlassCard delay={0.15} style={{ padding: "var(--space-lg)" }}>
+          <GlassCard delay={0.2} style={{ padding: "var(--space-lg)" }}>
             <div
               style={{
                 fontFamily: "var(--font-mono)",

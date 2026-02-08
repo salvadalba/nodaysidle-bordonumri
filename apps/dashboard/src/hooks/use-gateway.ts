@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import {
-  WS_URL,
+  WS_URL_GETTER,
   getHealth,
   getConfig,
   getChannels,
@@ -70,7 +70,7 @@ export function useGateway() {
     if (wsRef.current?.readyState === WebSocket.OPEN) return;
 
     try {
-      const ws = new WebSocket(WS_URL);
+      const ws = new WebSocket(WS_URL_GETTER());
       wsRef.current = ws;
 
       ws.onopen = () => {

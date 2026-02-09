@@ -43,6 +43,7 @@ vi.mock("@agentpilot/actions", () => {
     EmailWorker: makeWorkerClass("email", ["send_email", "read_emails"]),
     FilesWorker: makeWorkerClass("files", ["read_file", "write_file", "list_files", "move_file", "delete_file"]),
     NotesWorker: makeWorkerClass("notes", ["create_note", "read_note", "list_notes"]),
+    SchedulerWorker: makeWorkerClass("scheduler", ["schedule_task", "list_scheduled_tasks", "cancel_task"]),
     ShellWorker: makeWorkerClass("shell", ["shell_exec"]),
   };
 });

@@ -5,6 +5,7 @@ import {
   EmailWorker,
   FilesWorker,
   NotesWorker,
+  SchedulerWorker,
   ShellWorker,
 } from "@agentpilot/actions";
 import {
@@ -23,6 +24,8 @@ import type {
   ToolDefinition,
 } from "@agentpilot/core";
 import type { AgentPilotConfig } from "@agentpilot/core";
+import { readFileSync, readdirSync, existsSync, mkdirSync } from "node:fs";
+import { join } from "node:path";
 
 export interface AgentEvent {
   type: "thinking" | "action" | "response" | "error" | "confirmation";
@@ -61,6 +64,7 @@ export class AgentEngine {
       new EmailWorker(),
       new FilesWorker(),
       new NotesWorker(),
+      new SchedulerWorker(db),
       new ShellWorker(),
     ];
 
@@ -314,7 +318,33 @@ export class AgentEngine {
     return null;
   }
 
+  private loadSkills(): string {
+    const skillsDir = join(process.env.HOME ?? "~", ".agentpilot", "skills");
+    if (!existsSync(skillsDir)) {
+      mkdirSync(skillsDir, { recursive: true });
+      return "";
+    }
+
+    const files = readdirSync(skillsDir).filter((f) => f.endsWith(".md"));
+    if (files.length === 0) return "";
+
+    const skills: string[] = [];
+    for (const file of files) {
+      try {
+        const content = readFileSync(join(skillsDir, file), "utf-8");
+        skills.push(content);
+      } catch {
+        // Skip unreadable files
+      }
+    }
+
+    if (skills.length === 0) return "";
+    return `\n\nSKILLS (follow these instructions when relevant):\n${skills.join("\n\n---\n\n")}`;
+  }
+
   private buildSystemPrompt(message: ChannelMessage): string {
+    const skillsContent = this.loadSkills();
+
     return `You are AgentPilot, a personal assistant daemon running locally on this macOS machine.
 
 Connected via: ${message.channelType} | User: ${message.userId}
@@ -331,6 +361,9 @@ You have these tools available:
 - browse_web(url) -- fetch a webpage
 - web_search(query) -- search DuckDuckGo
 - create_note(name, content), append_note(name, content), read_note(name), list_notes(), search_notes(query) -- notes
+- schedule_task(name, cron, prompt) -- schedule a recurring task (cron expression + prompt to execute)
+- list_scheduled_tasks() -- list all scheduled tasks
+- cancel_task(id) -- cancel a scheduled task
 
 ENVIRONMENT:
 - The user's notepad/text editor app is Noteworthy.app (located at /Applications/Noteworthy.app). Use shell_exec("open /Applications/Noteworthy.app") to open it, or shell_exec("open -a Noteworthy file.txt") to open a file with it.
@@ -340,6 +373,6 @@ ENVIRONMENT:
 RULES:
 1. Use absolute paths. The user's files are in /Users/archuser/ and /Volumes/omarchyuser/.
 2. Be concise. After completing a task, briefly confirm what you did.
-3. For downloads, save to ~/Downloads/ by default unless the user specifies another location.`;
+3. For downloads, save to ~/Downloads/ by default unless the user specifies another location.${skillsContent}`;
   }
 }

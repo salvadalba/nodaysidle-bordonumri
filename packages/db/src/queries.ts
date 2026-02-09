@@ -7,6 +7,7 @@ import {
   permissions,
   auditLog,
   settings,
+  scheduledTasks,
 } from "./schema.js";
 import type {
   ChannelType,
@@ -226,4 +227,62 @@ export function setSetting(db: AgentPilotDb, key: string, value: string) {
 
 export function getSetting(db: AgentPilotDb, key: string) {
   return db.select().from(settings).where(eq(settings.key, key)).get();
+}
+
+// --- Scheduled Tasks ---
+
+export function createScheduledTask(
+  db: AgentPilotDb,
+  data: {
+    name: string;
+    cronExpression: string;
+    prompt: string;
+    channelType: string;
+    channelId: string;
+    userId: string;
+  },
+) {
+  const id = randomUUID();
+  db.insert(scheduledTasks).values({
+    id,
+    name: data.name,
+    cronExpression: data.cronExpression,
+    prompt: data.prompt,
+    channelType: data.channelType,
+    channelId: data.channelId,
+    userId: data.userId,
+    enabled: true,
+    createdAt: new Date(),
+  }).run();
+  return id;
+}
+
+export function getScheduledTasks(db: AgentPilotDb) {
+  return db
+    .select()
+    .from(scheduledTasks)
+    .where(eq(scheduledTasks.enabled, true))
+    .all();
+}
+
+export function getAllScheduledTasks(db: AgentPilotDb, userId?: string) {
+  if (userId) {
+    return db
+      .select()
+      .from(scheduledTasks)
+      .where(eq(scheduledTasks.userId, userId))
+      .all();
+  }
+  return db.select().from(scheduledTasks).all();
+}
+
+export function deleteScheduledTask(db: AgentPilotDb, id: string) {
+  db.delete(scheduledTasks).where(eq(scheduledTasks.id, id)).run();
+}
+
+export function updateScheduledTaskLastRun(db: AgentPilotDb, id: string) {
+  db.update(scheduledTasks)
+    .set({ lastRun: new Date() })
+    .where(eq(scheduledTasks.id, id))
+    .run();
 }

@@ -58,6 +58,19 @@ export const workflows = sqliteTable("workflows", {
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
 });
 
+export const scheduledTasks = sqliteTable("scheduled_tasks", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  cronExpression: text("cron_expression").notNull(),
+  prompt: text("prompt").notNull(),
+  channelType: text("channel_type").notNull(),
+  channelId: text("channel_id").notNull(),
+  userId: text("user_id").notNull(),
+  enabled: integer("enabled", { mode: "boolean" }).notNull().default(true),
+  lastRun: integer("last_run", { mode: "timestamp" }),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+});
+
 export const settings = sqliteTable("settings", {
   id: text("id").primaryKey(),
   key: text("key").notNull().unique(),

@@ -72,6 +72,19 @@ export function runMigrations(dbPath: string) {
       updated_at INTEGER NOT NULL
     );
 
+    CREATE TABLE IF NOT EXISTS scheduled_tasks (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      cron_expression TEXT NOT NULL,
+      prompt TEXT NOT NULL,
+      channel_type TEXT NOT NULL,
+      channel_id TEXT NOT NULL,
+      user_id TEXT NOT NULL,
+      enabled INTEGER NOT NULL DEFAULT 1,
+      last_run INTEGER,
+      created_at INTEGER NOT NULL
+    );
+
     CREATE INDEX IF NOT EXISTS idx_messages_session ON messages(session_id);
     CREATE INDEX IF NOT EXISTS idx_permissions_channel ON permissions(channel_type, channel_id);
     CREATE INDEX IF NOT EXISTS idx_audit_log_created ON audit_log(created_at);

@@ -77,6 +77,18 @@ export function createTestDb() {
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS scheduled_tasks (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      cron_expression TEXT NOT NULL,
+      prompt TEXT NOT NULL,
+      channel_type TEXT NOT NULL,
+      channel_id TEXT NOT NULL,
+      user_id TEXT NOT NULL,
+      enabled INTEGER NOT NULL DEFAULT 1,
+      last_run INTEGER,
+      created_at INTEGER NOT NULL
+    );
   `);
 
   const testDb = drizzle(sqlite, { schema });

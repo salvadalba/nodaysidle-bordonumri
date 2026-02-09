@@ -8,6 +8,7 @@ import { SimpleXAdapter } from "@agentpilot/channels";
 import { getDb, runMigrations } from "@agentpilot/db";
 import { getAuditLog } from "@agentpilot/db";
 import { AgentEngine, type AgentEvent } from "./agent.js";
+import { SchedulerEngine } from "./scheduler.js";
 import type { ChannelAdapter, ChannelMessage } from "@agentpilot/core";
 import type { WebSocket } from "ws";
 
@@ -28,7 +29,7 @@ let agent: AgentEngine | null = null;
 if (config.ai.anthropicApiKey || config.ai.geminiApiKey) {
   agent = new AgentEngine(db, config);
 
-  // Forward agent events to dashboard
+  // Forward agent events to dashboard + reload scheduler on task changes
   agent.onEvent((event: AgentEvent) => {
     const payload = JSON.stringify(event);
     for (const client of dashboardClients) {
@@ -36,6 +37,16 @@ if (config.ai.anthropicApiKey || config.ai.geminiApiKey) {
         // OPEN
         client.send(payload);
       }
+    }
+
+    // Reload scheduler when tasks are created/cancelled
+    if (
+      event.type === "action" &&
+      scheduler &&
+      (event.data.tool === "schedule_task" || event.data.tool === "cancel_task")
+    ) {
+      // Reload after a short delay so the DB write completes first
+      setTimeout(() => scheduler!.reload(), 500);
     }
   });
 }
@@ -59,6 +70,24 @@ if (config.channels.simplex?.cliPath) {
   const simplex = new SimpleXAdapter(config.channels.simplex.cliPath);
   simplex.onMessage((msg) => handleIncomingMessage(msg, simplex));
   channels.push(simplex);
+}
+
+// Initialize scheduler
+let scheduler: SchedulerEngine | null = null;
+
+if (agent) {
+  scheduler = new SchedulerEngine({
+    db,
+    agent,
+    sendReply: async (channelType, channelId, content) => {
+      const adapter = channels.find((c) => c.type === channelType);
+      if (adapter) {
+        await adapter.sendMessage(channelId, content);
+      } else {
+        console.error(`[Scheduler] No adapter found for channel type: ${channelType}`);
+      }
+    },
+  });
 }
 
 async function handleIncomingMessage(
@@ -165,12 +194,18 @@ const start = async () => {
       }
     }
 
+    // Start scheduler after channels are ready
+    if (scheduler) {
+      scheduler.start();
+    }
+
     await app.listen({ port: config.server.port, host: config.server.host });
     console.log(
       `\n🚀 AgentPilot Gateway running on http://${config.server.host}:${config.server.port}`,
     );
     console.log(`   Channels: ${channels.map((c) => c.type).join(", ") || "none configured"}`);
     console.log(`   AI: ${config.ai.primary}${agent ? " (ready)" : " (no API key)"}`);
+    console.log(`   Scheduler: ${scheduler ? "active" : "disabled"}`);
     console.log(`   Dashboard: http://localhost:${config.server.dashboardPort}\n`);
   } catch (err) {
     app.log.error(err);
@@ -181,6 +216,9 @@ const start = async () => {
 // Graceful shutdown
 process.on("SIGINT", async () => {
   console.log("\n[Gateway] Shutting down...");
+  if (scheduler) {
+    scheduler.stop();
+  }
   for (const channel of channels) {
     await channel.stop();
   }

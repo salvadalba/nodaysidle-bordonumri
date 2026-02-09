@@ -1,7 +1,7 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import websocket from "@fastify/websocket";
-import { loadConfig } from "@agentpilot/core";
+import { loadConfig, validateConfig } from "@agentpilot/core";
 import { TelegramAdapter } from "@agentpilot/channels";
 import { DiscordAdapter } from "@agentpilot/channels";
 import { SimpleXAdapter } from "@agentpilot/channels";
@@ -13,6 +13,14 @@ import type { ChannelAdapter, ChannelMessage } from "@agentpilot/core";
 import type { WebSocket } from "ws";
 
 const config = loadConfig();
+
+// Validate config - warn on issues but don't crash (allow partial configs)
+const configIssues = validateConfig(config);
+if (configIssues.length > 0) {
+  for (const issue of configIssues) {
+    console.warn(`[Config] ${issue}`);
+  }
+}
 
 // Ensure all tables exist before connecting
 runMigrations(config.database.path);
@@ -26,8 +34,9 @@ const dashboardClients = new Set<WebSocket>();
 // Initialize agent engine
 let agent: AgentEngine | null = null;
 
-if (config.ai.anthropicApiKey || config.ai.geminiApiKey) {
+if (config.ai.anthropicApiKey || config.ai.geminiApiKey || config.ai.openRouterApiKey) {
   agent = new AgentEngine(db, config);
+  await agent.initSkills();
 
   // Forward agent events to dashboard + reload scheduler on task changes
   agent.onEvent((event: AgentEvent) => {
@@ -79,12 +88,14 @@ if (agent) {
   scheduler = new SchedulerEngine({
     db,
     agent,
+    log: (msg) => app.log.info(`[Scheduler] ${msg}`),
+    logError: (msg) => app.log.error(`[Scheduler] ${msg}`),
     sendReply: async (channelType, channelId, content) => {
       const adapter = channels.find((c) => c.type === channelType);
       if (adapter) {
         await adapter.sendMessage(channelId, content);
       } else {
-        console.error(`[Scheduler] No adapter found for channel type: ${channelType}`);
+        app.log.error(`[Scheduler] No adapter found for channel type: ${channelType}`);
       }
     },
   });
@@ -188,9 +199,9 @@ const start = async () => {
     for (const channel of channels) {
       try {
         await channel.start();
-        console.log(`[Gateway] ${channel.type} adapter started`);
+        app.log.info(`${channel.type} adapter started`);
       } catch (err) {
-        console.error(`[Gateway] Failed to start ${channel.type}:`, err);
+        app.log.error(err, `Failed to start ${channel.type}`);
       }
     }
 
@@ -200,13 +211,10 @@ const start = async () => {
     }
 
     await app.listen({ port: config.server.port, host: config.server.host });
-    console.log(
-      `\n🚀 AgentPilot Gateway running on http://${config.server.host}:${config.server.port}`,
-    );
-    console.log(`   Channels: ${channels.map((c) => c.type).join(", ") || "none configured"}`);
-    console.log(`   AI: ${config.ai.primary}${agent ? " (ready)" : " (no API key)"}`);
-    console.log(`   Scheduler: ${scheduler ? "active" : "disabled"}`);
-    console.log(`   Dashboard: http://localhost:${config.server.dashboardPort}\n`);
+    app.log.info(`AgentPilot Gateway running on http://${config.server.host}:${config.server.port}`);
+    app.log.info(`Channels: ${channels.map((c) => c.type).join(", ") || "none configured"}`);
+    app.log.info(`AI: ${config.ai.primary}${agent ? " (ready)" : " (no API key)"}`);
+    app.log.info(`Scheduler: ${scheduler ? "active" : "disabled"}`);
   } catch (err) {
     app.log.error(err);
     process.exit(1);
@@ -215,7 +223,7 @@ const start = async () => {
 
 // Graceful shutdown
 process.on("SIGINT", async () => {
-  console.log("\n[Gateway] Shutting down...");
+  app.log.info("Shutting down...");
   if (scheduler) {
     scheduler.stop();
   }

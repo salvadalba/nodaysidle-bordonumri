@@ -11,6 +11,8 @@ interface SchedulerOptions {
   db: AgentPilotDb;
   agent: AgentEngine;
   sendReply: (channelType: string, channelId: string, content: string) => Promise<void>;
+  log?: (msg: string) => void;
+  logError?: (msg: string) => void;
 }
 
 export class SchedulerEngine {
@@ -18,11 +20,15 @@ export class SchedulerEngine {
   private db: AgentPilotDb;
   private agent: AgentEngine;
   private sendReply: SchedulerOptions["sendReply"];
+  private log?: (msg: string) => void;
+  private logError?: (msg: string) => void;
 
   constructor(opts: SchedulerOptions) {
     this.db = opts.db;
     this.agent = opts.agent;
     this.sendReply = opts.sendReply;
+    this.log = opts.log;
+    this.logError = opts.logError;
   }
 
   /** Load all enabled tasks from DB and start their cron jobs */
@@ -35,7 +41,7 @@ export class SchedulerEngine {
         userId: task.userId,
       });
     }
-    console.log(`[Scheduler] Loaded ${tasks.length} scheduled task(s)`);
+    this.log?.(`Loaded ${tasks.length} scheduled task(s)`);
   }
 
   /** Register a single cron job */
@@ -51,7 +57,7 @@ export class SchedulerEngine {
     }
 
     const job = cron.schedule(cronExpression, async () => {
-      console.log(`[Scheduler] Firing task ${taskId}: "${prompt.slice(0, 60)}..."`);
+      this.log?.(`Firing task ${taskId}: "${prompt.slice(0, 60)}..."`);
 
       const syntheticMessage: ChannelMessage = {
         id: `sched_${taskId}_${Date.now()}`,
@@ -68,7 +74,7 @@ export class SchedulerEngine {
         });
         updateScheduledTaskLastRun(this.db, taskId);
       } catch (err) {
-        console.error(`[Scheduler] Error executing task ${taskId}:`, err);
+        this.logError?.(`Error executing task ${taskId}: ${err}`);
       }
     });
 
@@ -100,6 +106,6 @@ export class SchedulerEngine {
       job.stop();
     }
     this.jobs.clear();
-    console.log("[Scheduler] All jobs stopped");
+    this.log?.("All jobs stopped");
   }
 }

@@ -14,6 +14,7 @@ const ACTION_REQUIRED_LEVELS: Record<ActionType, PermissionLevel> = {
   files: PermissionLevel.Modify,
   notes: PermissionLevel.Modify,
   shell: PermissionLevel.Execute,
+  scheduler: PermissionLevel.Modify,
 };
 
 const DESTRUCTIVE_OPERATIONS = new Set([

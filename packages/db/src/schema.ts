@@ -49,15 +49,6 @@ export const auditLog = sqliteTable("audit_log", {
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
 });
 
-export const workflows = sqliteTable("workflows", {
-  id: text("id").primaryKey(),
-  name: text("name").notNull(),
-  steps: text("steps", { mode: "json" }).notNull(),
-  trigger: text("trigger"),
-  enabled: integer("enabled", { mode: "boolean" }).notNull().default(true),
-  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
-});
-
 export const scheduledTasks = sqliteTable("scheduled_tasks", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),

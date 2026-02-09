@@ -80,13 +80,16 @@ export function addMessage(
   return id;
 }
 
-export function getMessages(db: AgentPilotDb, sessionId: string) {
-  return db
+export function getMessages(db: AgentPilotDb, sessionId: string, limit = 100) {
+  // Get the most recent N messages, then return in chronological order
+  const rows = db
     .select()
     .from(messages)
     .where(eq(messages.sessionId, sessionId))
-    .orderBy(messages.createdAt)
+    .orderBy(desc(messages.createdAt))
+    .limit(limit)
     .all();
+  return rows.reverse();
 }
 
 // --- Permissions ---

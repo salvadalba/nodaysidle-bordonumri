@@ -62,14 +62,6 @@ export function createTestDb() {
       confirmed INTEGER NOT NULL,
       created_at INTEGER NOT NULL
     );
-    CREATE TABLE IF NOT EXISTS workflows (
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL,
-      steps TEXT NOT NULL,
-      trigger TEXT,
-      enabled INTEGER NOT NULL DEFAULT 1,
-      created_at INTEGER NOT NULL
-    );
     CREATE TABLE IF NOT EXISTS settings (
       id TEXT PRIMARY KEY,
       key TEXT NOT NULL UNIQUE,
@@ -89,6 +81,7 @@ export function createTestDb() {
       last_run INTEGER,
       created_at INTEGER NOT NULL
     );
+    CREATE INDEX IF NOT EXISTS idx_scheduled_tasks_enabled ON scheduled_tasks(enabled);
   `);
 
   const testDb = drizzle(sqlite, { schema });

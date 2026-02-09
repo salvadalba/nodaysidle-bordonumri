@@ -57,15 +57,6 @@ function createTestDb() {
       created_at INTEGER NOT NULL
     );
 
-    CREATE TABLE workflows (
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL,
-      steps TEXT NOT NULL,
-      trigger TEXT,
-      enabled INTEGER NOT NULL DEFAULT 1,
-      created_at INTEGER NOT NULL
-    );
-
     CREATE TABLE settings (
       id TEXT PRIMARY KEY,
       key TEXT NOT NULL UNIQUE,
@@ -205,25 +196,6 @@ describe("Database Schema", () => {
     expect(settings).toHaveLength(1);
     expect(settings[0].key).toBe("theme");
     expect(settings[0].value).toBe("dark");
-  });
-
-  it("should create workflows", () => {
-    const now = new Date();
-    db.insert(schema.workflows)
-      .values({
-        id: "wf-1",
-        name: "Daily Summary",
-        steps: [{ action: "read_emails" }, { action: "summarize" }],
-        trigger: "cron:0 9 * * *",
-        enabled: true,
-        createdAt: now,
-      })
-      .run();
-
-    const workflows = db.select().from(schema.workflows).all();
-    expect(workflows).toHaveLength(1);
-    expect(workflows[0].name).toBe("Daily Summary");
-    expect(workflows[0].enabled).toBe(true);
   });
 
   it("should enforce unique settings key", () => {

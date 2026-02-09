@@ -55,15 +55,6 @@ export function runMigrations(dbPath: string) {
       created_at INTEGER NOT NULL
     );
 
-    CREATE TABLE IF NOT EXISTS workflows (
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL,
-      steps TEXT NOT NULL,
-      trigger TEXT,
-      enabled INTEGER NOT NULL DEFAULT 1,
-      created_at INTEGER NOT NULL
-    );
-
     CREATE TABLE IF NOT EXISTS settings (
       id TEXT PRIMARY KEY,
       key TEXT NOT NULL UNIQUE,
@@ -89,6 +80,7 @@ export function runMigrations(dbPath: string) {
     CREATE INDEX IF NOT EXISTS idx_permissions_channel ON permissions(channel_type, channel_id);
     CREATE INDEX IF NOT EXISTS idx_audit_log_created ON audit_log(created_at);
     CREATE INDEX IF NOT EXISTS idx_sessions_channel ON sessions(channel_type, channel_id, user_id);
+    CREATE INDEX IF NOT EXISTS idx_scheduled_tasks_enabled ON scheduled_tasks(enabled);
   `);
 
   sqlite.close();

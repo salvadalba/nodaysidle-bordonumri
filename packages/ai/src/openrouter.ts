@@ -63,6 +63,7 @@ export class OpenRouterAdapter implements AIProviderAdapter {
 
       if (openRouterTools?.length) {
         body.tools = openRouterTools;
+        body.tool_choice = "auto";
       }
 
       const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {

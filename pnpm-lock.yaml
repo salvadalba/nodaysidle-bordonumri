@@ -103,6 +103,9 @@ importers:
       '@agentpilot/db':
         specifier: workspace:*
         version: link:../db
+      node-cron:
+        specifier: ^4.2.1
+        version: 4.2.1
       playwright:
         specifier: ^1.50.0
         version: 1.58.2

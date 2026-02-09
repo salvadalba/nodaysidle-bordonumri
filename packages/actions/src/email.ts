@@ -48,6 +48,15 @@ export class EmailWorker implements ActionWorker {
             };
           }
 
+          // Basic email format validation
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailRegex.test(to)) {
+            return {
+              success: false,
+              error: `Invalid email address: "${to}"`,
+            };
+          }
+
           if (!this.config.smtp) {
             return {
               success: false,

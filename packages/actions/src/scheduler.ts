@@ -5,6 +5,7 @@ import {
   type ActionResult,
   type ToolDefinition,
 } from "@agentpilot/core";
+import cron from "node-cron";
 import type { AgentPilotDb } from "@agentpilot/db";
 import {
   createScheduledTask,
@@ -23,14 +24,17 @@ export class SchedulerWorker implements ActionWorker {
       switch (request.operation) {
         case "schedule_task": {
           const name = request.params.name as string;
-          const cron = request.params.cron as string;
+          const cronExpr = request.params.cron as string;
           const prompt = request.params.prompt as string;
-          if (!name || !cron || !prompt) {
+          if (!name || !cronExpr || !prompt) {
             return { success: false, error: "Missing name, cron, or prompt" };
+          }
+          if (!cron.validate(cronExpr)) {
+            return { success: false, error: `Invalid cron expression: "${cronExpr}". Use 5 fields: minute hour day-of-month month day-of-week` };
           }
           const id = createScheduledTask(this.db, {
             name,
-            cronExpression: cron,
+            cronExpression: cronExpr,
             prompt,
             channelType: request.channelType,
             channelId: request.channelId,
@@ -38,7 +42,7 @@ export class SchedulerWorker implements ActionWorker {
           });
           return {
             success: true,
-            data: { id, name, cron, prompt, message: `Scheduled task "${name}" created with cron "${cron}"` },
+            data: { id, name, cron: cronExpr, prompt, message: `Scheduled task "${name}" created with cron "${cronExpr}"` },
           };
         }
 

@@ -21,6 +21,16 @@ export class BrowserWorker implements ActionWorker {
             return { success: false, error: "No URL provided" };
           }
 
+          // Validate URL protocol to prevent SSRF
+          try {
+            const parsed = new URL(url);
+            if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
+              return { success: false, error: `Invalid URL protocol: ${parsed.protocol}. Only http/https allowed.` };
+            }
+          } catch {
+            return { success: false, error: `Invalid URL: ${url}` };
+          }
+
           const res = await fetch(url, {
             headers: {
               "User-Agent":
